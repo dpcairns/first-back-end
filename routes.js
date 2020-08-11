@@ -8,7 +8,10 @@ app.use(cors());
 
 app.use(express.static('public'));
 
-const { GEOCODE_API_KEY } = process.env;
+const {
+    GEOCODE_API_KEY,
+    MOVIE_KEY
+} = process.env;
 
 async function getLatLong(cityName) {
     // 1) replace hard coded data with a call to the API
@@ -40,6 +43,36 @@ app.get('/location', async(req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
+async function mungeMovies(cityName) {
+    const data = await request.get(`http://api.themoviedb.org/3/search/movie?api_key=${MOVIE_KEY}&query=${cityName}`);
+
+    const movies = data.body.results;
+
+    const mungedMovies = movies.map((movie) => {
+        return {
+            title: movie.original_title,
+            release: movie.release_date
+        };
+    });
+    return mungedMovies;
+}
+
+// 7) therefore, we need to make this route async
+app.get('/movies', async(req, res) => {
+    try {
+        // we pass in the name of a city
+        const userInput = req.query.search;
+
+        // search for and munge movies with that city in the title
+        const movies = await mungeMovies(userInput);
+
+        res.json(movies);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 
 app.get('/chars', async(req, res) => {
