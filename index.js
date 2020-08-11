@@ -6,6 +6,9 @@ const weatherData = require('./data/weather.js');
 const app = express();
 const port = process.env.PORT || 3000;
 
+console.log('=============================\n');
+console.log('|| process.env.PORT', process.env.PORT);
+console.log('\n=============================');
 app.use(cors());
 
 app.use(express.static('public'));
